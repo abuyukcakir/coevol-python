@@ -99,13 +99,19 @@ def clean_data():
     src_vc = loadmat('RealityMining/Source_Voice_Call.mat')
     dest_vc = loadmat('RealityMining/Destination_Voice_Call.mat')
 
+    # dates_bt = loadmat('RealityMining/Date_text_Bluetoothe.mat')
+    # src_bt = loadmat('RealityMining/Source_realitymining_Bluetoothe.mat')
+    # dest_bt = loadmat('RealityMining/Destination_realitymining_Bluetoothe.mat')
+
     vc_date = np.stack(dates_vc['Date'], axis=1)[0]
     vc_src = np.stack(src_vc['Source'], axis=1)[0]
     vc_dest = np.stack(dest_vc['Destination'], axis=1)[0]
 
-    sm_date = np.stack(dates_vc['Date'], axis=1)[0]
-    sm_src = np.stack(src_vc['Source'], axis=1)[0]
-    sm_dest = np.stack(dest_vc['Destination'], axis=1)[0]
+    sm_date = np.stack(dates_sm['Date'], axis=1)[0]
+    sm_src = np.stack(src_sm['Source'], axis=1)[0]
+    sm_dest = np.stack(dest_sm['Destination'], axis=1)[0]
+
+    # bt_date = np.stack(dates_vc['Bluetoothe'], axis=1)[0]
 
     all_nodes = reduce( np.union1d, (vc_src, vc_dest, sm_src, sm_dest))
 
@@ -141,36 +147,37 @@ def get_weekly_dates(date_arr):
     # print(weekly)
     return weekly
 
-snapshots_m_vc, snapshots_m_sm, max_nodeid = preprocess(mode=MONTHLY)
-# snapshots_w_vc, snapshots_w_sm = preprocess(mode=WEEKLY)
+if(__name__ == "__main__"):
+    snapshots_m_vc, snapshots_m_sm, max_nodeid = preprocess(mode=MONTHLY)
+    # snapshots_w_vc, snapshots_w_sm = preprocess(mode=WEEKLY)
 
-# Number of timestamps T
-T = len(snapshots_m_vc)
-# Number of subjects
-S = 2
-# Number of nodes in one snapshot
-n = max_nodeid+1
+    # Number of timestamps T
+    T = len(snapshots_m_vc)
+    # Number of subjects
+    S = 2
+    # Number of nodes in one snapshot
+    n = max_nodeid+1
 
-A = np.empty((T, S), dtype=object)
+    A = np.empty((T, S), dtype=object)
 
-# Read graph snapshots as matrices, and input them to CoEvol
-for i in range(len(snapshots_m_vc)):
-    A[i, 0] = nx.to_scipy_sparse_matrix(snapshots_m_vc[i])
+    # Read graph snapshots as matrices, and input them to CoEvol
+    for i in range(len(snapshots_m_vc)):
+        A[i, 0] = nx.to_scipy_sparse_matrix(snapshots_m_vc[i])
 
-for i in range(len(snapshots_m_sm)):
-    A[i, 1] = nx.to_scipy_sparse_matrix(snapshots_m_sm[i])
+    for i in range(len(snapshots_m_sm)):
+        A[i, 1] = nx.to_scipy_sparse_matrix(snapshots_m_sm[i])
 
-print('Reality Mining dataset is read.')
-print('Running CoEVOL on the dataset...')
+    print('Reality Mining dataset is read.')
+    print('Running CoEVOL on the dataset...')
 
-# ks = [5, 10, 15, 20, 25]
-# thetas = [0.3, 0.5, 0.7, 0.9]
+    # ks = [5, 10, 15, 20, 25]
+    thetas = [0.1, 0.3, 0.5, 0.7, 0.9]
 
-thetas = [0.1]
-ks = [3, 7]
+    # thetas = [0.1]
+    ks = [5, 10]
 
-errs = np.zeros((len(ks), len(thetas)))
-for i in range(len(ks)):
-    for j in range(len(thetas)):
-        coevol = CoEVOL(A, k=ks[i], theta=thetas[j])
-        coevol.factorize()
+    errs = np.zeros((len(ks), len(thetas)))
+    for i in range(len(ks)):
+        for j in range(len(thetas)):
+            coevol = CoEVOL(A, k=ks[i], theta=thetas[j])
+            coevol.factorize()
